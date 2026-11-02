@@ -136,3 +136,33 @@ func styleConfigFromFile(path string) (ansi.StyleConfig, error) {
 	}
 	return styleConfig, nil
 }
+
+// GlamourHyperlinks returns the glamour hyperlink option for the terminal in
+// env. A terminal with OSC 8 support gets inline links: the link text is
+// clickable, so glamour does not print the URL after it.
+func GlamourHyperlinks(env []string) glamour.TermRendererOption {
+	if SupportsHyperlinks(env) {
+		return glamour.WithHyperlinkMode(ansi.HyperlinkModeInline)
+	}
+	return glamour.WithHyperlinkMode(ansi.HyperlinkModeAuto)
+}
+
+// SupportsHyperlinks reports whether env names a terminal known to support
+// OSC 8 hyperlinks.
+func SupportsHyperlinks(env []string) bool {
+	vars := make(map[string]string, len(env))
+	for _, e := range env {
+		if k, v, ok := strings.Cut(e, "="); ok {
+			vars[k] = v
+		}
+	}
+	switch vars["TERM_PROGRAM"] {
+	case "ghostty", "iTerm.app", "WezTerm", "kitty", "alacritty", "Hyper", "vscode", "Tabby", "rio":
+		return true
+	}
+	switch vars["TERM"] {
+	case "xterm-ghostty", "xterm-kitty", "wezterm":
+		return true
+	}
+	return vars["WT_SESSION"] != "" || vars["KONSOLE_VERSION"] != "" || vars["VTE_VERSION"] != ""
+}

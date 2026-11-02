@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"math"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -367,6 +368,7 @@ func glamourRender(m pagerModel, markdown string) (string, error) {
 	options := []glamour.TermRendererOption{
 		utils.GlamourStyle(m.common.cfg.GlamourStyle, isCode),
 		glamour.WithWordWrap(width),
+		utils.GlamourHyperlinks(os.Environ()),
 	}
 
 	if m.common.cfg.PreserveNewLines {
